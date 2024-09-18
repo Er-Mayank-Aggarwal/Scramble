@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scramble</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="codemirror-5.65.16/lib/codemirror.css" />
+  <script src="codemirror-5.65.16/lib/codemirror.js"></script>
+  <script src="codemirror-5.65.16/mode/clike/clike.js"></script>
+  <link rel="stylesheet" href="codemirror-5.65.16/theme/dracula.css" />
+  <script src="codemirror-5.65.16/addon/edit/closebrackets.js"></script>
+  <script src="codemirror-5.65.16/mode/python/python.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: wheat;
+    overflow: hidden;
+    overflow-y: auto;
+  }
+
+  #Logo,
+  #Encarta {
+    max-height: 50px;
+    margin-right: 10px;
+  }
+
+  .navbar {
+    position: fixed;
+    width: 100px;
+    height: 100vh;
+    background-color: #333;
+    position: fixed;
+    left: 0;
+    top: 70px;
+    /* overflow-x: hidden; */
+    padding-top: 0px;
+    margin-top: 0;
+  }
+
+  #run {
+    align-self: flex-end;
+    font-size: 110%;
+    background-color: rgba(0, 128, 0, 0.543);
+    border-radius: 5px;
+    transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .CodeMirror {
+    position: relative !important;
+    z-index: 0 !important;
+
+  }
+
+  #run:hover {
+    background-color: #e49367;
+    box-shadow: 3px 3px 0px 0px #564d4d;
+  }
+
+  #submit {
+    align-self: flex-end;
+    font-size: 110%;
+    background-color: rgba(0, 128, 0, 0.543);
+    border-radius: 5px;
+    transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  #submit:hover {
+    color: #fefefe;
+    background-color: #c16432;
+    box-shadow: 3px 3px 0px 0px #564d4d;
+  }
+
+  #qu_head {
+    text-align: center;
+    color: aliceblue;
+    padding-top: 20px;
+    width: 100%;
+    padding-bottom: 2vh;
+    border-bottom: 2px white solid;
+    font-weight: bolder;
+  }
+
+  .navbar button {
+    padding-left: 45px;
+    cursor: pointer;
+    background-color: transparent;
+    border: transparent 0px;
+    color: white;
+    padding-bottom: 20px;
+  }
+
+  .navbar button:hover {
+    background-color: #555;
+  }
+
+  .content {
+    margin-left: 200px;
+    padding: 16px;
+  }
+
+  #terminal {
+    padding-top: 0.5vh;
+    position: relative;
+    left: -1.5px;
+  }
+
+  .inputbox {
+    position: sticky;
+    height: 20%;
+    margin-top: 3vh;
+    align-items: center;
+  }
+
+  .outputbox {
+    margin-top: 5vh;
+    height: 80%;
+    align-items: center;
+  }
+
+  #input {
+    margin-top: 1vh;
+    height: 100%;
+    width: 90%;
+    font-size: larger;
+    padding-left: 1vb;
+    padding-top: 1vh;
+    padding-right: 1vb;
+    padding-bottom: 1vh;
+  }
+
+  #output {
+    margin-top: 1vh;
+    height: 75%;
+    width: 90%;
+    font-size: larger;
+    padding-left: 1vb;
+    padding-top: 1vh;
+    padding-right: 1vb;
+    padding-bottom: 1vh;
+  }
+
+  #violation-message {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 24px;
+    text-align: center;
+    padding-top: 20vh;
+  }
+
+  .popup-container {
+    text-align: center;
+    padding: 20px;
+    background-color: #f2f2f275;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    width: 40%;
+    transform: translate(60%, 30%);
+    box-shadow: 0 0 20px rgba(255, 2, 2, 0.5),
+      0 0 10px rgba(235, 255, 17, 0.1);
+  }
+
+  .form-input {
+    margin: 10px 0;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+  }
+
+  .submit-button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all linear 0.04s;
+  }
+
+  .submit-button:hover {
+    background-color: #e49367;
+    color: #333;
+  }
+
+  textarea {
+    resize: none;
+  }
+
+  .heading {
+    margin-top: 2vh;
+    display: flex;
+
+    width: 98vw;
+
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 0.5vh black groove;
+    align-items: center;
+    padding: 20px;
+    background-color: wheat;
+  }
+
+  #Logo,
+  #Encarta {
+    max-width: 30%;
+    /* Reduce the size of the images by 50% */
+    height: auto;
+    /* Maintain aspect ratio */
+  }
+
+  #blackout {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    background-color: black;
+    display: none;
+    z-index: 1000;
+  }
+
+  #pop-i {
+    position: absolute;
+    width: 45vh;
+    top: -50px;
+    left: 0;
+    background-color: white;
+    padding: 5px;
+    border: 1px solid #2e2b2b;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease, top 0.3s ease;
+  }
+
+  #info:hover+#pop-i {
+    opacity: 1;
+    top: 30px;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-content {
+    background-color: #7A6E59;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #272424;
+    width: fit-content;
+  }
+
+  #wait_instructions {
+    background-color: #b2bc4c;
+    border-radius: 4px;
+    height: 25px;
+  }
+
+  #wait_instructions:hover {
+    cursor: pointer;
+  }
+</style>
+
+<body>
+  <!--Initial Form-->
+  <div class="popup-container" style="position: absolute; z-index: 100">
+    <form>
+      <label for="input1">Enter your name:</label>
+      <input placeholder="Your Name" type="text" id="input1" class="form-input" required />
+
+      <label for="input2">Select your year:</label>
+      <select id="input2" class="form-input" required>
+        <option value="" disabled selected>Select Year</option>
+        <option value="1">1st</option>
+        <option value="2">2nd</option>
+        <option value="3">3rd</option>
+        <option value="4">4th</option>
+      </select>
+
+      <label for="input3">Enter your branch:</label>
+      <select id="input3" class="form-input" required>
+        <option value="" disabled selected>Select a branch</option>
+        <option value="CSE">Computer Science Engineering(CSE)</option>
+        <option value="IT">Information Technology(IT)</option>
+        <option value="AIDS">Artificial Intelligence and Data Science(AI-DS)</option>
+        <option value="ECE">Electronics and Communication Engineering(ECE)</option>
+        <option value="ECC">Electronics and Computer Engineering(ECC)</option>
+        <option value="EEE">Electrical Engineering(EEE)</option>
+        <option value="MI">Mining(MI)</option>
+        <option value="CE">Civil Engineering(CE)</option>
+        <option value="CHE">Chemical Engineering(CHE)</option>
+        <option value="ME">Mechanical Engineering(EEE)</option>
+        <option value="P&I">Production & Industrial Engineering(P&I)</option>
+        <option value="BCT">Building and Construction Technology(BCT)</option>
+        <option value="PE">Petroleum Engineering(PE)</option>
+        <option value="BArch">Architecture(B.Arch)</option>
+      </select>
+      <button type="submit" id="handlebutton" class="submit-button">
+        Submit
+      </button>
+    </form>
+  </div>
+
+  <div id="visibility" style="filter: blur(30px); position: relative">
+    <!--blackout screen-->
+    <div id="blackout"></div>
+    <div id="cover" style="
+          height: 100vh;
+          width: 100vw;
+          background-color: wheat;
+          font-size: 30px;
+          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          align-content: center;
+          justify-self: center;
+          flex-direction: column;
+        ">
+      <img id="Encarta" src="https://i.ibb.co/w7RWb8B/encarta-logo-light.png" alt="Encarta" />
+      <h1>⏰ Waiting for the host to start the event 🧑‍💻</h1>
+      <button id="wait_instructions">Show Instructions...</button>
+      <p id="ins" style="display: none;"> <!--Instructions-->
+        • You're required to solve the current question before moving on to another.<br>
+        • Multiple attempts are allowed, but keep in mind that time also impacts your ranking.<br>
+        • Your code won't be submitted automatically when the timer ends, so remember to submit it promptly.<br>
+        • Copy paste the code from question to the IDE and start solving.<br>
+        • Best of luck!👍 Stick to the basics and you'll do great. Avoid cheating to avoid disqualification.
+      </p>
+    </div>
+    <div id="sara" style="display: none; ">
+      <!--Heading-->
+
+      <!--Navbar-->
+      <div class="navbar" style="position: sticky; transform: translate(0,-9.5vh); z-index: 10;">
+
+        <div class="heading">
+          <img id="Logo" src="https://i.ibb.co/f4hpq4V/Scramble.png" alt="logo" />
+          <div id="timer">
+            <p style="color: black; font-size: 15px ; font-style: italic; text-align: center;">
+              Time Remaining - <span>60:00</span> <!--SET TIMER 2-->
+            </p>
+          </div>
+          <img id="Encarta" src="https://i.ibb.co/w7RWb8B/encarta-logo-light.png" alt="Encarta" />
+        </div>
+
+        <p id="qu_head">Questions</p>
+        <div id="Questions">
+          <button style="
+                width: 100%;
+                padding: 10px 0px;
+                height: fit-content;
+                text-align: center;" id="Q1"
+            data-questionhead='#include &ltstdio.h><br>
+            int main() {<br>
+                printf("%s\n", textConvert);<br>
+                                       if(textConvert[i] <= 122){<br>
+                int endChar = sizeof(textConvert) / sizeof(textConvert[0]); <br>
+                for (int i = 0; i < endChar; i++) {<br>
+                printf(&quot%s\n&quot, textConvert);<br>
+                    }<br>
+                                           textConvert[i] = textConvert[i] - 32;<br>
+                                if (textConvert[i] >= 97) {<br>
+                char textConvert[] = &quotcheck it &quot ;<br>
+                        }<br>
+                return 0;<br>
+                }<br>
+            }<br>
+            '>
+            Question 1
+          </button>
+          <!-- SET Question 1 above-->
+          <button style="
+                width: 100%;
+                padding: 10px 0px;
+                height: fit-content;
+                text-align: center;
+                border-top: black solid 1.5px;
+                border-bottom: black solid 1.5px;
+              " id="Q2" data-questionhead='#include &ltstdio.h><br>
+
+void swap(int *x, int *y) {<br>  
+    *y = temp;<br>
+    int temp = *x;<br>
+    *x = *y;<br>
+}<br>
+
+int main() {<br>
+    int a[6] = {1, 2, 3, 4, 5, 7};<br>
+    int i = 0;<br>
+        j--;<br>
+    while (i <= j) {<br>
+        i++;<br>
+    }<br>
+        swap(&a[i], &a[j]);<br>
+
+    int j = 5;<br>
+    for (int i = 0; i < 6; i++) {<br>
+        printf(&quot%d &quot, a[i]);<br>
+    printf(&quot\n&quot);<br>
+    return 0;<br>
+    }<br>
+}<br>
+'
+>
+            Question 2
+          </button>
+          <!-- SET Question 2 above-->
+          <button style="
+                width: 100%;
+                padding: 10px 0px;
+                height: fit-content;
+                text-align: center;
+              " id="Q3" data-questionhead="int x = 7;<br>int result = calculate(x);<br>#include &ltstdio.h><br>int main() {<br>int value = 3;<br>printf(&quot;The result of calculation with %d is: %d&quot;, x, result);<br>return 0;<br>}<br>int calculate(int n) {<br>int res = 1;<br>for (int i = 1; i <= n; ++i) {<br>res *= i;<br>}<br>return res;<br>}
+">
+            Question 3
+          </button>
+          <!-- SET Question 3 above-->
+        </div>
+        <div style="
+        position: relative;
+        top : -22.8vh;
+      
+        left: 80vw;
+        background-color: black;
+        color: aliceblue;
+        text-align: center;
+        border-radius: 4px;
+        width: 250px;
+        height: 85vh;
+      ">
+    <div class="inputbox" style="display: flex; flex-direction: column; padding-top: 10px; margin-top: 3vh">
+      <label for="Input" class="text-light">Input</label>
+      <textarea type="text" id="input" class="form-control" placeholder="Enter your input here.."></textarea>
+    </div>
+    <div class="outputbox">
+      <label for="Output" class="text-light" style="display: flex; flex-direction: column">Output</label>
+      <textarea type="text" id="output" class="form-control"
+        placeholder="Output will be displayed here.." disabled style="background-color: white;"></textarea>
+    </div>
+  </div>
+      </div>
+
+      <!--Main content-->
+      <div id="content" style="padding-left: 8.5vw; position: relative;
+      transform: translate(0,-90vh);" >
+        <h2 id="question" style="width: 76.6% ; font-weight: lighter ; background-color: #b2bc4c; padding: 7px; border: 3px black solid;">
+          
+        </h2>
+   
+        <div id="Q1C" class="wrap"  > 
+          <div style="
+                display: flex;
+                width: 69.6vw;
+              
+                justify-content: space-between;
+               
+              ">
+            <div>
+              <select class="form-select" id="inlineFormSelectPref" style="font-size: 105%" required>
+                <option disabled selected>Choose...</option>
+                <option value="Cpp">C++</option>
+                <option value="C">C</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 6px;;">
+              <div style="position: relative;">
+                <i id="info" class="fa-solid fa-circle-info" style="color: rgb(202, 73, 73) ; width: 800px;"></i>
+                <div id="pop-i" style="
+                      display: none;
+                      position: absolute;
+                      background-color: rgb(227, 150, 36);
+                      z-index: 100;
+                    ">
+                  <p>
+                    • You' re required to solve the current question before moving on to another.<br>
+            • Multiple attempts are allowed, but keep in mind that time also impacts your ranking.<br>
+            • Your code won't be submitted automatically when the timer ends, so remember to submit it promptly.<br>
+            • Copy paste the code from question to the IDE and start solving.<br>
+            • Best of luck!👍 Stick to the basics and you'll do great. Avoid cheating to avoid disqualification.
+            </p>
+        </div>
+      </div>
+      <button type="button" id="run" class="btn btn-success">
+        <i class="fa-solid fa-play"></i> Run
+      </button>
+      <button type="button" id="submit" data-question-id="Q1" class="btn btn-success">
+        <i class="fa-solid fa-check"></i> Submit
+      </button>
+    </div>
+  </div>
+  <div class="row m-3" style="overflow: hidden ;">
+    <div class="col" style="max-width: 70%">
+      <div id="terminal">
+        <textarea type="text" id="editor" class="form-control" aria-label="First name"></textarea>
+      </div>
+    </div>
+
+    <!--Input and Output Field-->
+
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+
+  <!--Violation message-->
+  <div id="violation-message" style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 24px;
+        text-align: center;
+        padding-top: 20vh;
+      ">
+    <h2>Violation: You switched tabs You are disqualified!</h2>
+    <button onclick="openModal()">Admin access</button>
+  </div>
+  <!-- Modal -->
+  <div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <h2 style="color: white;">Enter admin password:</h2>
+      <input style="border: 3px solid black;" type="password" id="passwordInput" class="password-input" />
+      <button style="background-color: #4caf50;" onclick="checkPassword()">Submit</button>
+    </div>
+  </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/dropbox@10.34.0/dist/Dropbox-sdk.min.js"></script>
+<script>
+  const insbtn = document.getElementById("wait_instructions");
+  const showins = document.getElementById("ins");
+  var flag = false;
+  insbtn.addEventListener("click", () => {
+    if (!flag) {
+      showins.style.display = "block";
+      flag = true;
+      insbtn.innerText = "Hide Instructions";
+    }
+    else {
+      showins.style.display = "none";
+      flag = false;
+      insbtn.innerText = "Show Instructions";
+    }
+
+  })
+
+  const infoIcon = document.getElementById("info");
+  const popDiv = document.getElementById("pop-i");
+  infoIcon.addEventListener("mouseover", () => {
+    popDiv.style.display = "block";
+  });
+  infoIcon.addEventListener("mouseout", () => {
+    popDiv.style.display = "none";
+  });
+
+
+  let currentTime = new Date();
+  let targetTime = new Date(
+    currentTime.getFullYear(),
+    currentTime.getMonth(),
+    currentTime.getDate(),  //START TIME
+    13,
+    47,
+    0
+  );
+
+  document.getElementById("handlebutton").addEventListener("click", function (event) {
+    event.preventDefault();
+
+
+    console.log(formyear.value)
+    if (formname.value == "") {
+      alert("please enter your name");
+    }
+    else if (formyear.value == "") {
+      alert("please select year");
+    }
+    else if (formbranch.value == "") {
+      alert("please select your Branch")
+    }
+    else {
+      console.log(formname.value);
+      handlesubmit();
+    }
+  });
+  document
+    .getElementById("Questions")
+    .addEventListener("click", function (event) {
+      // let timer = document.getElementById("timer");
+      let questions = document.getElementById("question");
+      let submitButton = document.getElementById("submit");
+      let questionId = event.target.id; // Store the id of the clicked question button
+      let sup = submitButton.getAttribute("data-question-id");
+      console.log(submitButton);
+      console.log(questionId + "true");
+      // let img = document.getElementById("mainimg");
+      if (event.target.id == sup) {
+        submitButton.setAttribute("data-question-id", questionId);
+        submitButton.className = questionId;
+        console.log(submitButton);
+        questions.innerHTML = event.target.getAttribute("data-questionhead");
+      }
+      else if (
+        submitButton.getAttribute("data-issubmitted").includes(sup + "true")
+      ) {
+        submitButton.setAttribute("data-question-id", questionId);
+        // var loc = event.target.getAttribute("data-image");
+        // img.setAttribute("src", loc)
+        // Store the id as a data attribute
+        timer.setAttribute("data-question-id", questionId);
+        submitButton.className = questionId;
+        console.log(submitButton);
+        // Update the text content of the questions heading
+        questions.innerHTML =
+          event.target.getAttribute("data-questionhead");
+      } else {
+        alert("You have not submitted the answer for the question");
+      }
+    });
+
+  let timerInterval; // Variable to hold the interval ID
+  let name = "";
+  let year = "";
+  let branch = "";
+  let formname = document.getElementById("input1");
+  let formyear = document.querySelector("#input2");
+  let formbranch = document.querySelector("#input3");
+
+  if ((name = null)) {
+    document.getElementsByClassName("popup-container")[0].style.display =
+      "block";
+    document.getElementById("visibility").style.filter = "blur(30px)";
+  }
+
+  if (name != "" || name != null || name != undefined) {
+    loadFormData();
+    document.getElementsByClassName("popup-container")[0].style.display =
+      "none";
+    document.getElementById("visibility").style.filter = "blur(0px)";
+  }
+  function handlesubmit() {
+    event.preventDefault();
+    let fullName = formname.value.split(" ");
+    console.log(fullName);
+    for (let i = 0; i < fullName.length; i++) {
+      if (fullName[i] != null) {
+        name += fullName[i]
+      }
+
+    };
+    year = formyear.value;
+    branch = formbranch.value;
+    document.getElementsByClassName("popup-container")[0].style.display =
+      "none";
+    document.getElementById("visibility").style.filter = "blur(0px)";
+    var formData = {
+      name: name,
+      year: year,
+      branch: branch,
+
+    };
+    console.log(name);
+    var jsonData = JSON.stringify(formData);
+
+    localStorage.setItem("formData", jsonData);
+
+    window.location.reload();
+  }
+
+  function loadFormData() {
+    var jsonData = localStorage.getItem("formData");
+
+    var formData = JSON.parse(jsonData);
+    if (formData.name != null || formData.name != undefined) {
+      name = formData.name;
+      year = formData.year;
+      branch = formData.branch;
+    }
+  }
+
+  var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+    mode: "text/x-c++src",
+    theme: "dracula",
+    autoCloseBrackets: true,
+  });
+  var width = window.innerWidth;
+  var input = document.getElementById("input");
+  var output = document.getElementById("output");
+  var run = document.getElementById("run");
+  editor.setSize(0.7 * width, "500");
+
+  let option = document.getElementById("inlineFormSelectPref");
+  var sub = document.getElementById("submit");
+  const ACCESS_TOKEN = //ACCESS TOKEN
+    "sl.BxtbOAsEc2uo6nit7QtsL1XktQqjTWi8CHTrqrA-taLmeybggA5gbZIzIN1KlvOrr19XunNa5TZBNdrwO8jP4ljT3_kGImdGq8B1WSjFwjkz6nKwX6ilc4j5HBOPhrr91_hQgio6Tbmq8XVgE6sBftA"
+  name = name.split("null")
+  const FOLDER_NAME = name[1] + "_" + branch + "_" + year;
+  const dbx = new Dropbox.Dropbox({ accessToken: ACCESS_TOKEN });
+  sub.addEventListener("click", function (event) {
+    let optioni = document.getElementById("inlineFormSelectPref");
+
+    var code1 = {
+      code: editor.getValue(),
+      input: input.value,
+      lang: option.value,
+    };
+    var data = code1.code;
+    console.log(data);
+    const blob = new Blob([data], {
+      type: "text/plain",
+    });
+    let extension = "";
+    if (optioni.value == "Java") {
+      extension = ".java";
+    } else if (option.value == "Python") {
+      extension = ".py";
+    }
+    else if (option.value == "C") {
+      extension = ".c";
+    }
+    else {
+      extension = ".cpp";
+    }
+    console.log(event);
+    const currentDate = new Date();
+    const hours = currentDate.getHours().toString().padStart(2, "0");
+    const minutes = currentDate.getMinutes().toString().padStart(2, "0");
+    const seconds = currentDate.getSeconds().toString().padStart(2, "0");
+
+    const timeString = `${hours}:${minutes}:${seconds}`;
+
+    const filename =
+      event.target.getAttribute("data-question-id") +
+      "_" +
+      timeString +
+      extension;
+    let classs = event.target.getAttribute("data-question-id");
+    console.log(classs);
+    let spy = sub.getAttribute("data-issubmitted");
+
+    sub.setAttribute("data-Issubmitted", spy + classs + "true");
+    console.log(filename);
+    console.log(FOLDER_NAME);
+    console.log(sub);
+    createFolderAndUpload(filename, blob);
+  });
+  option.addEventListener("change", function () {
+    if (option.value == "Java") {
+      editor.setOption("mode", "text/x-java");
+    } else if (option.value == "python") {
+      editor.setOption("mode", "text/x-python");
+    } else {
+      editor.setOption("mode", "text/x-c++src");
+    }
+  });
+  var code;
+  run.addEventListener("click", async function () {
+    code = {
+      code: editor.getValue(),
+      input: input.value,
+      lang: option.value,
+    };
+    console.log(code);
+    var oData = await fetch("/compile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(code),
+    });
+    var d = await oData.json();
+    if (d.error == undefined) {
+      output.value = d.output;
+    }
+    else {
+      output.value = d.error;
+    }
+    console.log(d.error);
+  });
+
+  console.log(branch);
+  // function hideBlackout() {
+  //   var blackout = document.getElementById("blackout");
+  //   blackout.style.display = "none";
+  //   setTimeout(showblackout, 8000); //VISIBLE TIMER
+  // }
+
+  // function showblackout() {
+  //   var blackout = document.getElementById("blackout");
+  //   blackout.style.display = "block";
+  //   setTimeout(hideBlackout, 3000);   //BLACKSCREEN TIMER
+  // }
+
+  async function createFolderAndUpload(fileName, fileContent) {
+    try {
+      // Check if the folder exists
+      console.log("Checking if folder exists...");
+      const folderExists = await checkFolderExists();
+
+      if (!folderExists) {
+        // Create the folder
+        console.log("Creating folder...");
+        const folderResponse = await dbx.filesCreateFolderV2({
+          path: "/" + FOLDER_NAME,
+          autorename: false,
+        });
+
+        console.log("Folder creation response:", folderResponse);
+
+        if (
+          !folderResponse ||
+          !folderResponse.result ||
+          !folderResponse.result.metadata ||
+          !folderResponse.result.metadata.id
+        ) {
+          throw new Error("Failed to create folder");
+        }
+      }
+
+      // Upload the file into the folder
+      console.log("Uploading file...");
+      const uploadResponse = await dbx.filesUpload({
+        path: "/" + FOLDER_NAME + "/" + fileName,
+        contents: fileContent,
+        autorename: true,
+      });
+
+      console.log("File upload response:", uploadResponse);
+      alert("File uploaded successfully");
+    } catch (error) {
+      console.error("Error creating folder or uploading file", error);
+      alert("Error creating folder or uploading file: " + error.message);
+    }
+  }
+
+  // Function to check if the folder already exists
+  async function checkFolderExists() {
+    try {
+      const response = await dbx.filesGetMetadata({
+        path: "/" + FOLDER_NAME,
+      });
+      return (
+        response && response.result && response.result[".tag"] === "folder"
+      );
+    } catch (error) {
+      if (error.status === 409) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  // hideBlackout();
+
+  // Function to start the timer
+  function startTimer(duration, display) {
+    let timer = duration,
+      minutes,
+      seconds;
+    timerInterval = setInterval(function () {
+      minutes = parseInt(timer / 60, 10);
+      seconds = parseInt(timer % 60, 10);
+
+      minutes = minutes < 10 ? "0" + minutes : minutes;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+
+      display.textContent = minutes + ":" + seconds;
+      if (timer <= 0) {
+        clearInterval(timerInterval); // Stop the timer
+        var elemo = document.createElement("div");
+        var h2e = document.createElement("h1");
+        var vis = document.getElementById("visibility")
+        h2e.textContent = "😊 Thank You for participating 😊"
+
+        elemo.style.display = "flex";
+        elemo.style.height = "100vh"
+        elemo.style.justifyItems = "center"
+        elemo.style.alignItems = "center"
+        elemo.style.alignContent = "center"
+        elemo.style.justifyContent = "center"
+        h2e.style.fontSize = "50px"
+        console.log(elemo)
+        var body = document.body;
+        body.appendChild(elemo);
+        elemo.appendChild(h2e);
+        vis.style.display = "none"
+      }
+
+      if (--timer < 0) {
+        timer = duration;
+
+
+      }
+    }, 1000);
+  }
+
+  // Function to check if current time matches a specific time
+  function checkTimeToStart(currentTime, targetTime) {
+    let currentTiime = new Date();
+    let targetTiime = targetTime; // Change the time here to match your desired time
+    let difference = currentTiime.getTime() - targetTiime.getTime();
+    let x = 3600;  //SET TIMER 
+    console.log(currentTiime);
+    if (difference >= 0) {
+      // Current time exceeds the target time, calculate the difference and start the timer
+      if (difference == 0) {
+        window.location.reload();
+      }
+      if (Math.ceil(difference / 1000) > x) {
+        let duration = 0; // Convert milliseconds to seconds
+        let display = document.querySelector("#timer span");
+        startTimer(duration, display);
+      } else {
+        let duration = x - Math.ceil(difference / 1000); // Convert milliseconds to seconds
+        let display = document.querySelector("#timer span");
+        startTimer(duration, display);
+      }
+      document.getElementById("sara").style.display = "block";
+      document.getElementById("cover").style.display = "none";
+
+    } else if (difference < 0) {
+
+      document.getElementById("sara").style.display = "none";
+      document.getElementById("cover").style.display = "flex";
+      setInterval(() => checkTimeToStart(currentTime, targetTime), 1000);
+
+    }
+
+
+  }
+
+  checkTimeToStart(currentTime, targetTime);
+  function showImage() {
+    var imageContainer = document.getElementById("image-container");
+    if (imageContainer.style.display === "none") {
+      imageContainer.style.display = "block";
+    } else {
+      imageContainer.style.display = "none";
+    }
+  }
+  window.addEventListener('load', function () {
+    // Find the button element
+    var button = document.getElementById('Q1');
+    // Trigger click event on the button
+    button.click();
+  });
+</script>
+
+
+</html>
